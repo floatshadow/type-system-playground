@@ -9,7 +9,6 @@ module Lang = struct
   let parse_command = Parse.cmd
   let parse_file = Parse.file
   let create_environment () = Infer.Env.empty, Infer.Fundef.empty
-  let lp_backend = ref (module Soplex : Potential.BACKEND)
   let analysis_degree = ref 2
   let print_stats = ref false
 
@@ -25,7 +24,7 @@ module Lang = struct
               Infer.Fundef.add_fun_definition fdef f normalized_dec
           in
           Analyze.f_dec
-            !lp_backend
+            (module Clp)
             ~verbose
             ~degree:!analysis_degree
             ~print_stats:!print_stats
@@ -44,21 +43,11 @@ module Lang = struct
           | None ->
             if verbose then Format.eprintf "@{<error>Error@}: function %s not found@." f);
           infer_env, fdef
-        | Cmd_use_solver b ->
-          (match b with
-          | "soplex" ->
-            lp_backend := (module Soplex : Potential.BACKEND);
-            if verbose then Format.printf "use backend soplex@."
-          | "clp" ->
-            lp_backend := (module Clp : Potential.BACKEND);
-            if verbose then Format.printf "use backend clp@."
-          | _ -> if verbose then Format.eprintf "@{<error>Error@}: unknown backend %s@." b);
-          infer_env, fdef
         | Cmd_analyze f ->
           (match Infer.Fundef.find_fun_definition fdef f with
           | Some dec ->
             Analyze.f_dec
-              !lp_backend
+              (module Clp)
               ~verbose
               ~degree:!analysis_degree
               ~print_stats:!print_stats

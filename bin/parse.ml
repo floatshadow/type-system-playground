@@ -34,7 +34,6 @@ let rec loop lexbuf checkpoint =
    fun terminal ->
     match terminal with
     | T_error -> None
-    | T_USESOLVER -> Some "\"#use\""
     | T_UIDENT -> Some "uppercase identifier"
     | T_TRUE -> Some "keyword \"true\""
     | T_TICK -> Some "keyward \"tick\""

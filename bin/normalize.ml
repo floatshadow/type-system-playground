@@ -25,7 +25,7 @@ let insert_shares ~elim_reuse env mk_fv k =
   then k env env
   else (
     let fv = mk_fv () in
-    let binds = Ast.Var_map.to_alist fv in
+    let binds = Map.to_alist fv in
     let env1, env2, sharings_rev =
       List.fold binds ~init:(env, env, []) ~f:(fun (env1, env2, acc) (x, ty) ->
           let x' = Option.value ~default:x (Map.find env x) in

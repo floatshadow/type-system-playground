@@ -69,7 +69,6 @@ type typed_dec = (fun_ty, ty) dec
 type cmd =
   | Cmd_dec of untyped_dec
   | Cmd_show_type of string
-  | Cmd_use_solver of string
   | Cmd_analyze of string
   | Cmd_set_degree of int
   | Cmd_print_stats of bool
@@ -141,6 +140,10 @@ let map_ty_term ~f =
 module Var_map = struct
   include String.Map
 
+  let merge = Map.merge
+
+  let remove = Map.remove
+  
   let union =
     merge ~f:(fun ~key:_ -> function
       | `Both (v1, _) -> Some v1

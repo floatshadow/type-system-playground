@@ -50,8 +50,8 @@ module Make (B : Potential.BACKEND) = struct
         ~sep:"\n"
         (List.map
            ~f:snd
-           (I.Map.to_alist
-              (I.Map.filter_mapi pot ~f:(fun ~key:ind ~data:annot ->
+           (Map.to_alist
+              (Map.filter_mapi pot ~f:(fun ~key:ind ~data:annot ->
                    match f annot with
                    | None -> None
                    | Some annot_str ->
@@ -64,27 +64,27 @@ module Make (B : Potential.BACKEND) = struct
 
     let zero_pot ~degree tye = I.make_pot ~degree tye ~f:(fun _ -> zero_annot)
     let assert_eq_pot = I.Map.iter2_exn ~f:assert_eq_annot
-    let assert_zero_pot = I.Map.iter ~f:(fun annot -> assert_eq_annot_scalar annot F.zero)
+    let assert_zero_pot = Map.iter ~f:(fun annot -> assert_eq_annot_scalar annot F.zero)
 
     let add_pot_unequal_inds =
-      I.Map.merge ~f:(fun ~key:_ -> function
+      Map.merge ~f:(fun ~key:_ -> function
         | `Both (annot1, annot2) -> Some (add_annot annot1 annot2)
         | `Left annot1 -> Some annot1
         | `Right annot2 -> Some annot2)
     ;;
 
     let add_pot_annot ~on_ind pot annot =
-      I.Map.set pot ~key:on_ind ~data:(add_annot (I.Map.find_exn pot on_ind) annot)
+      Map.set pot ~key:on_ind ~data:(add_annot (Map.find_exn pot on_ind) annot)
     ;;
 
     let sub_pot_annot ~on_ind pot annot =
-      I.Map.set pot ~key:on_ind ~data:(sub_annot (I.Map.find_exn pot on_ind) annot)
+      Map.set pot ~key:on_ind ~data:(sub_annot (Map.find_exn pot on_ind) annot)
     ;;
 
     let min_pot = I.Map.map2_exn ~f:min_annot
     let max_pot = I.Map.map2_exn ~f:max_annot
-    let split_pot pot = I.Map.unzip (I.Map.map ~f:split_annot pot)
-    let weaken_pot = I.Map.map ~f:weaken_annot
+    let split_pot pot = Map.unzip (Map.map ~f:split_annot pot)
+    let weaken_pot = Map.map ~f:weaken_annot
   end
 
   and T : sig
@@ -347,7 +347,7 @@ module Make (B : Potential.BACKEND) = struct
       Tye_with (map_annot_ftye ~f ftye1, map_annot_ftye ~f ftye2)
     | Tye_plus (tye1, tye2) -> Tye_plus (map_annot_tye ~f tye1, map_annot_tye ~f tye2)
 
-  and map_annot_rtye ~f (tye, pot) = map_annot_tye ~f tye, I.Map.map ~f pot
+  and map_annot_rtye ~f (tye, pot) = map_annot_tye ~f tye, Map.map ~f pot
 
   and map_annot_ftye ~f (Tye_fun (arg_rtye, res_rtye)) =
     Tye_fun (map_annot_rtye ~f arg_rtye, map_annot_rtye ~f res_rtye)
@@ -375,7 +375,7 @@ module Make (B : Potential.BACKEND) = struct
 
   and get_coefs_rtye ~is_negative l (tye, pot) =
     let coefs, inv_coefs = get_coefs_tye ~is_negative l tye in
-    ( I.Map.fold pot ~init:[] ~f:(fun ~key:ind ~data:annot acc ->
+    ( Map.fold pot ~init:[] ~f:(fun ~key:ind ~data:annot acc ->
           let w = F.(l * pow (of_int 10) (I.degree ind)) in
           (annot, if is_negative then w else F.(-w)) :: acc)
       @ coefs

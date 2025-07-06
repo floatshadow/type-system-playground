@@ -60,7 +60,7 @@ module Make (B : Potential.BACKEND) = struct
         CI.make_cpot ~degree binds ~f:(fun cind ->
             let ind_x, cind' = CI.split cind ~on_var:x in
             assert (CI.degree cind' = 0);
-            I.Map.find_exn pot ind_x)
+            Map.find_exn pot ind_x)
       in
       { binds; cpot; degree }
     ;;
@@ -71,11 +71,11 @@ module Make (B : Potential.BACKEND) = struct
         CI.make_cpot ~degree binds' ~f:(fun cind ->
             let ind_x, cind' = CI.split cind ~on_var:x in
             if CI.degree cind = 0
-            then add_annot (I.Map.find_exn pot ind_x) (CI.Map.find_exn cpot cind')
+            then add_annot (Map.find_exn pot ind_x) (Map.find_exn cpot cind')
             else if I.degree ind_x = 0
-            then CI.Map.find_exn cpot cind'
+            then Map.find_exn cpot cind'
             else if CI.degree cind' = 0
-            then I.Map.find_exn pot ind_x
+            then Map.find_exn pot ind_x
             else zero_annot)
       in
       { binds = binds'; cpot = cpot'; degree }
@@ -86,7 +86,7 @@ module Make (B : Potential.BACKEND) = struct
       let cpot' =
         CI.make_cpot ~degree binds' ~f:(fun cind ->
             let ind_x, cind' = CI.split cind ~on_var:x in
-            if I.degree ind_x = 0 then CI.Map.find_exn cpot cind' else zero_annot)
+            if I.degree ind_x = 0 then Map.find_exn cpot cind' else zero_annot)
       in
       { binds = binds'; cpot = cpot'; degree }
     ;;
@@ -95,7 +95,7 @@ module Make (B : Potential.BACKEND) = struct
       let cind = CI.star_of binds in
       { binds
       ; cpot =
-          CI.Map.set cpot ~key:cind ~data:(add_annot (CI.Map.find_exn cpot cind) annot)
+          Map.set cpot ~key:cind ~data:(add_annot (Map.find_exn cpot cind) annot)
       ; degree
       }
     ;;
@@ -104,7 +104,7 @@ module Make (B : Potential.BACKEND) = struct
       let cind = CI.star_of binds in
       { binds
       ; cpot =
-          CI.Map.set cpot ~key:cind ~data:(add_annot_scalar (CI.Map.find_exn cpot cind) k)
+          Map.set cpot ~key:cind ~data:(add_annot_scalar (Map.find_exn cpot cind) k)
       ; degree
       }
     ;;
@@ -112,7 +112,7 @@ module Make (B : Potential.BACKEND) = struct
     let find_var_type_bind { binds; _ } x = Map.find binds x
 
     let assert_potential_free { cpot; _ } =
-      CI.Map.iter cpot ~f:(fun annot -> assert_eq_annot_scalar annot F.zero)
+      Map.iter cpot ~f:(fun annot -> assert_eq_annot_scalar annot F.zero)
     ;;
 
     let join
@@ -133,10 +133,10 @@ module Make (B : Potential.BACKEND) = struct
             let cind1, cind'1 = CI.split_multi cind ~on_vars:xs1 in
             let cind2, cind'2 = CI.split_multi cind ~on_vars:xs2 in
             let annot1 =
-              if CI.degree cind'1 = 0 then CI.Map.find_exn cpot1 cind1 else zero_annot
+              if CI.degree cind'1 = 0 then Map.find_exn cpot1 cind1 else zero_annot
             in
             let annot2 =
-              if CI.degree cind'2 = 0 then CI.Map.find_exn cpot2 cind2 else zero_annot
+              if CI.degree cind'2 = 0 then Map.find_exn cpot2 cind2 else zero_annot
             in
             max_annot annot1 annot2)
       in
@@ -145,14 +145,14 @@ module Make (B : Potential.BACKEND) = struct
 
     let sum_up_inds_on_pot ~degree pot inds =
       List.fold inds ~init:zero_annot ~f:(fun acc ind ->
-          if I.degree ind > degree then acc else add_annot acc (I.Map.find_exn pot ind))
+          if I.degree ind > degree then acc else add_annot acc (Map.find_exn pot ind))
     ;;
 
     let sum_up_inds_on_cpot ~degree ~on cpot cind inds =
       List.fold inds ~init:zero_annot ~f:(fun acc ind ->
           if I.degree ind + CI.degree cind > degree
           then acc
-          else add_annot acc (CI.Map.find_exn cpot (CI.extend cind on ind)))
+          else add_annot acc (Map.find_exn cpot (CI.extend cind on ind)))
     ;;
 
     let cons ~degree (tye, pot) ~xh ~xt =
@@ -183,7 +183,7 @@ module Make (B : Potential.BACKEND) = struct
             ~data:(Tye_list tye_xh)
         in
         let cpot' = CI.make_cpot ~degree binds' ~f:(fun _ -> new_nonneg_annot ()) in
-        CI.Map.iteri cpot ~f:(fun ~key:cind ~data:annot ->
+        Map.iteri cpot ~f:(fun ~key:cind ~data:annot ->
             let ind_xh, cind' = CI.split cind ~on_var:xh in
             let ind_xt, cind'' = CI.split cind' ~on_var:xt in
             assert_ge_annot
@@ -213,7 +213,7 @@ module Make (B : Potential.BACKEND) = struct
               in
               let named_inds = List.rev named_inds_rev in
               assert (CI.degree cind' = 0);
-              I.Map.find_exn pot (I.tensor_named named_inds))
+              Map.find_exn pot (I.tensor_named named_inds))
         in
         { binds; cpot; degree }
       | _ -> assert false
@@ -228,7 +228,7 @@ module Make (B : Potential.BACKEND) = struct
           ~data:(Tye_tensor tye0s)
       in
       let cpot' = CI.make_cpot ~degree binds' ~f:(fun _ -> new_nonneg_annot ()) in
-      CI.Map.iteri cpot ~f:(fun ~key:cind ~data:annot ->
+      Map.iteri cpot ~f:(fun ~key:cind ~data:annot ->
           let named_inds_rev, cind' =
             List.fold2_exn xs tye0s ~init:([], cind) ~f:(fun (acc, cind) x (name0, _) ->
                 let ind_x, cind' = CI.split cind ~on_var:x in
@@ -236,7 +236,7 @@ module Make (B : Potential.BACKEND) = struct
           in
           let named_inds = List.rev named_inds_rev in
           assert_ge_annot
-            (CI.Map.find_exn cpot' (CI.extend cind' on (I.tensor_named named_inds)))
+            (Map.find_exn cpot' (CI.extend cind' on (I.tensor_named named_inds)))
             annot);
       { binds = binds'; cpot = cpot'; degree }
     ;;
@@ -261,7 +261,7 @@ module Make (B : Potential.BACKEND) = struct
         Map.add_exn (Map.remove binds x) ~key:on ~data:(Tye_plus (tye_x, tye_other))
       in
       let cpot' = CI.make_cpot ~degree binds' ~f:(fun _ -> new_nonneg_annot ()) in
-      CI.Map.iteri cpot ~f:(fun ~key:cind ~data:annot ->
+      Map.iteri cpot ~f:(fun ~key:cind ~data:annot ->
           let ind_x, cind' = CI.split cind ~on_var:x in
           assert_ge_annot
             (sum_up_inds_on_cpot ~degree ~on cpot' cind' (I.shift_inl ind_x))
@@ -289,7 +289,7 @@ module Make (B : Potential.BACKEND) = struct
         Map.add_exn (Map.remove binds x) ~key:on ~data:(Tye_plus (tye_other, tye_x))
       in
       let cpot' = CI.make_cpot ~degree binds' ~f:(fun _ -> new_nonneg_annot ()) in
-      CI.Map.iteri cpot ~f:(fun ~key:cind ~data:annot ->
+      Map.iteri cpot ~f:(fun ~key:cind ~data:annot ->
           let ind_x, cind' = CI.split cind ~on_var:x in
           assert_ge_annot
             (sum_up_inds_on_cpot ~degree ~on cpot' cind' (I.shift_inr ind_x))
@@ -303,25 +303,25 @@ module Make (B : Potential.BACKEND) = struct
       List.iter (CI.all_cinds_up_to ~degree binds) ~f:(fun cind ->
           let ind_x, cind' = CI.split cind ~on_var:x in
           if CI.degree cind' = 0
-          then pot := I.Map.add_exn !pot ~key:ind_x ~data:(CI.Map.find_exn cpot cind)
+          then pot := Map.add_exn !pot ~key:ind_x ~data:(Map.find_exn cpot cind)
           else (
-            match CI.Map.find !frames cind' with
+            match Map.find !frames cind' with
             | None ->
               frames
-                := CI.Map.add_exn
+                := Map.add_exn
                      !frames
                      ~key:cind'
-                     ~data:(I.Map.singleton ind_x (CI.Map.find_exn cpot cind))
+                     ~data:(I.Map.singleton ind_x (Map.find_exn cpot cind))
             | Some old_pot ->
               frames
-                := CI.Map.set
+                := Map.set
                      !frames
                      ~key:cind'
                      ~data:
-                       (I.Map.add_exn
+                       (Map.add_exn
                           old_pot
                           ~key:ind_x
-                          ~data:(CI.Map.find_exn cpot cind))));
+                          ~data:(Map.find_exn cpot cind))));
       !pot, !frames
     ;;
 
@@ -332,7 +332,7 @@ module Make (B : Potential.BACKEND) = struct
         { binds = binds2; degree = degree2; _ }
       =
       assert (degree1 = degree2);
-      CI.Map.iter framed_envs ~f:(fun framed_env ->
+      Map.iter framed_envs ~f:(fun framed_env ->
           Map.iter2 binds1 framed_env.binds ~f:(fun ~key:_ ~data ->
               match data with
               | `Both (tye, cf_tye) -> ignore (add_tye_cf tye cf_tye : _)
@@ -348,10 +348,10 @@ module Make (B : Potential.BACKEND) = struct
         CI.make_cpot ~degree:degree1 binds' ~f:(fun cind ->
             let cind1, cind2 = CI.split_multi cind ~on_vars:xs1 in
             if CI.degree cind2 = 0
-            then CI.Map.find_exn cpot1 cind1
+            then Map.find_exn cpot1 cind1
             else (
-              let framed_env = CI.Map.find_exn framed_envs cind2 in
-              CI.Map.find_exn framed_env.cpot cind1))
+              let framed_env = Map.find_exn framed_envs cind2 in
+              Map.find_exn framed_env.cpot cind1))
       in
       { binds = binds'; cpot = cpot'; degree = degree1 }
     ;;
@@ -363,7 +363,7 @@ module Make (B : Potential.BACKEND) = struct
       let binds' = Map.add_exn (Map.remove (Map.remove binds x1) x2) ~key:on ~data:tye1 in
       let cpot' =
         CI.Map.of_alist_fold
-          (List.concat_map (CI.Map.to_alist cpot) ~f:(fun (cind, annot) ->
+          (List.concat_map (Map.to_alist cpot) ~f:(fun (cind, annot) ->
                let ind1, cind' = CI.split cind ~on_var:x1 in
                let ind2, cind'' = CI.split cind' ~on_var:x2 in
                List.map (I.share ind1 ind2) ~f:(fun (ind, coef) ->
@@ -379,28 +379,28 @@ module Make (B : Potential.BACKEND) = struct
       let tye = Map.find_exn binds x in
       I.make_pot ~degree tye ~f:(fun ind ->
           let cind = CI.extend (CI.star_of binds') x ind in
-          CI.Map.find_exn cpot cind)
+          Map.find_exn cpot cind)
     ;;
 
     let remove_projected_var { binds; cpot; degree } x =
       assert (Map.mem binds x);
       let binds' = Map.remove binds x in
       let cpot' = CI.make_cpot ~degree binds' ~f:(fun _ -> new_nonneg_annot ()) in
-      CI.Map.iteri cpot ~f:(fun ~key:cind ~data:annot ->
+      Map.iteri cpot ~f:(fun ~key:cind ~data:annot ->
           let ind_x, cind' = CI.split cind ~on_var:x in
           if I.degree ind_x < CI.degree cind
           then
             if I.degree ind_x > 0
             then assert_eq_annot_scalar annot F.zero
-            else assert_eq_annot annot (CI.Map.find_exn cpot' cind')
-          else assert_eq_annot_scalar (CI.Map.find_exn cpot' cind') F.zero);
+            else assert_eq_annot annot (Map.find_exn cpot' cind')
+          else assert_eq_annot_scalar (Map.find_exn cpot' cind') F.zero);
       { binds = binds'; cpot = cpot'; degree }
     ;;
 
-    let project_star { binds; cpot; _ } = CI.Map.find_exn cpot (CI.star_of binds)
+    let project_star { binds; cpot; _ } = Map.find_exn cpot (CI.star_of binds)
 
     let remove_projected_star { binds; cpot; degree } =
-      { binds; cpot = CI.Map.set cpot ~key:(CI.star_of binds) ~data:zero_annot; degree }
+      { binds; cpot = Map.set cpot ~key:(CI.star_of binds) ~data:zero_annot; degree }
     ;;
   end
 
@@ -422,13 +422,13 @@ module Make (B : Potential.BACKEND) = struct
     let rec aux ((post_tye, post_pot) as post_rtye) tm =
       match tm.Ast.term_desc with
       | Tm_var x -> Env.singleton ~degree x post_rtye
-      | Tm_bool _ -> Env.empty ~degree (I.Map.find_exn post_pot (I.star_of post_tye))
+      | Tm_bool _ -> Env.empty ~degree (Map.find_exn post_pot (I.star_of post_tye))
       | Tm_cond (tm0, tm1, tm2) ->
         let x0 = get_var tm0 in
         let env1 = aux (post_tye, weaken_pot post_pot) tm1 in
         let env2 = aux (post_tye, weaken_pot post_pot) tm2 in
         Env.add_var_type_bind_free (Env.join env1 env2) x0 Tye_bool
-      | Tm_nil -> Env.empty ~degree (I.Map.find_exn post_pot (I.star_of post_tye))
+      | Tm_nil -> Env.empty ~degree (Map.find_exn post_pot (I.star_of post_tye))
       | Tm_cons (tm1, tm2) ->
         let x1 = get_var tm1 in
         let x2 = get_var tm2 in
@@ -480,7 +480,7 @@ module Make (B : Potential.BACKEND) = struct
           Env.assert_potential_free env0_del_x;
           Env.add_pot_annot_on_star
             env0_del_x
-            (add_annot (I.Map.find_exn post_pot (I.star_of post_tye)) borrowed_annot)
+            (add_annot (Map.find_exn post_pot (I.star_of post_tye)) borrowed_annot)
         | _ -> assert false)
       | Tm_app (tm1, tm2) ->
         let x1 = get_var tm1 in
@@ -509,7 +509,7 @@ module Make (B : Potential.BACKEND) = struct
             aux (tye12, add_pot_annot ~on_ind:(I.star_of tye12) pot12 borrowed_annot1) tm1
           in
           assert_eq_annot
-            (I.Map.find_exn pot11 (I.star_of (Tye_tensor [])))
+            (Map.find_exn pot11 (I.star_of (Tye_tensor [])))
             (sub_annot (Env.project_star env1) borrowed_annot1);
           let env1 = Env.remove_projected_star env1 in
           Env.assert_potential_free env1;
@@ -518,14 +518,14 @@ module Make (B : Potential.BACKEND) = struct
             aux (tye22, add_pot_annot ~on_ind:(I.star_of tye22) pot22 borrowed_annot2) tm2
           in
           assert_eq_annot
-            (I.Map.find_exn pot21 (I.star_of (Tye_tensor [])))
+            (Map.find_exn pot21 (I.star_of (Tye_tensor [])))
             (sub_annot (Env.project_star env2) borrowed_annot2);
           let env2 = Env.remove_projected_star env2 in
           Env.assert_potential_free env2;
           Env.add_pot_annot_on_star
             (Env.join env1 env2)
             (add_annot
-               (I.Map.find_exn post_pot (I.star_of post_tye))
+               (Map.find_exn post_pot (I.star_of post_tye))
                (max_annot borrowed_annot1 borrowed_annot2))
         | _ -> assert false)
       | Tm_first tm0 ->
@@ -538,7 +538,7 @@ module Make (B : Potential.BACKEND) = struct
           Env.add_var_type_bind_free
             (Env.empty
                ~degree
-               (add_annot (I.Map.find_exn arg_pot (I.star_of (Tye_tensor []))) frame))
+               (add_annot (Map.find_exn arg_pot (I.star_of (Tye_tensor []))) frame))
             x0
             (Tye_with
                ( Tye_fun
@@ -559,7 +559,7 @@ module Make (B : Potential.BACKEND) = struct
           Env.add_var_type_bind_free
             (Env.empty
                ~degree
-               (add_annot (I.Map.find_exn arg_pot (I.star_of (Tye_tensor []))) frame))
+               (add_annot (Map.find_exn arg_pot (I.star_of (Tye_tensor []))) frame))
             x0
             (Tye_with
                ( Tye_fun
@@ -594,7 +594,7 @@ module Make (B : Potential.BACKEND) = struct
         let pot_x, frames = Env.decompose_frames env2 ~on:x in
         let env1 = aux (tye_x, pot_x) tm1 in
         let framed_envs =
-          CI.Map.mapi frames ~f:(fun ~key:cind2 ~data:frame_pot_x ->
+          Map.mapi frames ~f:(fun ~key:cind2 ~data:frame_pot_x ->
               let _, frame_tye_x =
                 split_tye_cf ~degree:(degree - CI.degree cind2) tye_x
               in
@@ -635,7 +635,7 @@ module Make (B : Potential.BACKEND) = struct
           let non_cf_post_tye, cf_post_tye = split_tye_cf ~degree:(degree - 1) post_tye in
           let non_cf_post_pot, cf_post_pot = split_pot post_pot in
           let cf_post_pot =
-            I.Map.filteri cf_post_pot ~f:(fun ~key:ind ~data:annot ->
+            Map.filteri cf_post_pot ~f:(fun ~key:ind ~data:annot ->
                 if I.degree ind = degree
                 then (
                   assert_eq_annot_scalar annot F.zero;

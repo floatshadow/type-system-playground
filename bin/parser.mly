@@ -52,7 +52,6 @@ let mk_dec ~loc dec_desc = { dec_desc; dec_loc = make_loc loc }
 %token TICK                         "tick"
 %token TRUE                         "true"
 %token <string> UIDENT              "Ident" (* just an example *)
-%token USESOLVER                    "#use"
 
 %start <cmd> cmd_exn
 %start <cmd list> file_exn
@@ -179,8 +178,6 @@ cmd:
     { Cmd_dec $1 }
   | SHOWTYPE UIDENT SEMICOLON
     { Cmd_show_type $2 }
-  | USESOLVER LIDENT SEMICOLON
-    { Cmd_use_solver $2 }
   | ANALYZE UIDENT SEMICOLON
     { Cmd_analyze $2 }
   | SETDEGREE INTV SEMICOLON

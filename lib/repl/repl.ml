@@ -18,7 +18,7 @@ module Make (L : LANG) = struct
   exception Invalid_option of string
 
   let () =
-    Caml.Printexc.register_printer (function
+    Stdlib.Printexc.register_printer (function
         | Invalid_option msg -> Some ("invalid option (" ^ msg ^ ")")
         | _ -> None)
   ;;
@@ -165,7 +165,6 @@ module Make (L : LANG) = struct
   ;;
 
   let main () =
-    Misc.Color.setup None;
     Command_unix.run driver
   ;;
 

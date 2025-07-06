@@ -38,7 +38,6 @@ let symbol_table =
     ; "then", Parser.THEN
     ; "tick", Parser.TICK
     ; "true", Parser.TRUE
-    ; "#use", Parser.USESOLVER
     ]
 ;;
 
@@ -94,7 +93,7 @@ rule token_exn = parse
           Parser.LIDENT name }
   | upper (lower | upper | digit | '_' | '\'')* as name
     { Parser.UIDENT name }
-  | "#analyze" | ".l" | ".r" | "->" | "-o" | "#degree" | "#type" | "#stats" | "#use"
+  | "#analyze" | ".l" | ".r" | "->" | "-o" | "#degree" | "#type" | "#stats"
     { Hashtbl.find_exn symbol_table (Lexing.lexeme lexbuf) }
   | ['&' '*' '|' ':' ',' '=' '(' '+' ')' ';']
     { Hashtbl.find_exn symbol_table (Lexing.lexeme lexbuf) }
